@@ -1,5 +1,6 @@
 package ru.realityfamily.party_server.Models;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import org.springframework.lang.NonNull;
 
 import javax.persistence.*;
@@ -8,7 +9,7 @@ import java.util.Map;
 import java.util.UUID;
 
 @Entity
-@Table
+@Table(name = "person")
 public class Person {
     @NonNull
     @Id
@@ -26,12 +27,10 @@ public class Person {
     private String email;
 
     @Column
-    private String password;
-
-    @Column
     private String phone;
 
     @OneToOne(mappedBy = "person")
+    @JsonBackReference
     private PersonCredentials credentials;
 
     @ElementCollection
@@ -78,14 +77,6 @@ public class Person {
 
     public void setEmail(String email) {
         this.email = email;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
     }
 
     public String getPhone() {

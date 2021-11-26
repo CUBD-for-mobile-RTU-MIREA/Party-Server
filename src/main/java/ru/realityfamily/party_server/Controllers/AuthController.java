@@ -8,10 +8,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import ru.realityfamily.party_server.DB.DAO.PersonCredentialsDAO;
 import ru.realityfamily.party_server.DB.DAO.PersonDAO;
 import ru.realityfamily.party_server.Models.Person;
@@ -20,6 +17,7 @@ import ru.realityfamily.party_server.Security.Services.JWTUtils;
 import ru.realityfamily.party_server.Security.Services.MyUserDetailsService;
 
 import java.util.Map;
+import java.util.UUID;
 
 @RestController
 public class AuthController {
@@ -41,12 +39,12 @@ public class AuthController {
     private PersonDAO personDAO;
 
     @PostMapping("auth")
-    public ResponseEntity<String> authentication(@RequestBody AuthRequest body) throws Exception {
+    public ResponseEntity<String> authentication(@RequestBody PersonCredentials body) throws Exception {
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
-                            body.login,
-                            body.password
+                            body.getLogin(),
+                            body.getPassword()
                     )
             );
         } catch (BadCredentialsException e) {
@@ -57,7 +55,7 @@ public class AuthController {
         }
 
         final UserDetails userDetails = userDetailsService
-                .loadUserByUsername(body.login);
+                .loadUserByUsername(body.getLogin());
 
         if (userDetails != null) {
             final String token = jwtUtils.generateToken(userDetails);
@@ -69,17 +67,16 @@ public class AuthController {
     }
 
     @PostMapping("register")
-    public ResponseEntity<String> registration(@RequestBody RegisterRequest body) throws Exception {
-        if (body.login != null && body.password!= null && body.role != null
-                && !personCredentialsDAO.existsByLoginLike(body.login)) {
-            Person person = new Person();
-            person = personDAO.save(person);
+    public ResponseEntity<String> registration(@RequestBody PersonCredentials body) throws Exception {
+        if (body.getLogin() != null && body.getPassword()!= null
+                && !personCredentialsDAO.existsByLoginLike(body.getLogin()) && body.getPerson() != null) {
+            Person person = personDAO.save(body.getPerson());
 
             personCredentialsDAO.save(
                     new PersonCredentials(
-                            body.login,
-                            passwordEncoder.encode(body.password),
-                            body.role,
+                            body.getLogin(),
+                            passwordEncoder.encode(body.getPassword()),
+                            PersonCredentials.Role.USER,
                             person
                     )
             );
@@ -90,8 +87,8 @@ public class AuthController {
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
-                            body.login,
-                            body.password
+                            body.getLogin(),
+                            body.getPassword()
                     )
             );
         } catch (BadCredentialsException e) {
@@ -100,7 +97,7 @@ public class AuthController {
         }
 
         final UserDetails userDetails = userDetailsService
-                .loadUserByUsername(body.login);
+                .loadUserByUsername(body.getLogin());
 
         if (userDetails != null) {
             final String token = jwtUtils.generateToken(userDetails);
@@ -111,14 +108,29 @@ public class AuthController {
         }
     }
 
-    public static final class AuthRequest{
-        public String login;
-        public String password;
+    @GetMapping("/auth/oauth")
+    ResponseEntity<OutAuthResponse> outAuth(@RequestParam OAUTH2Provider provider) {
+        return ResponseEntity.ok(
+                new OutAuthResponse(
+                        "path",
+                        UUID.randomUUID()
+                )
+        );
     }
 
-    public static final class RegisterRequest{
-        public String login;
-        public String password;
-        public PersonCredentials.Role role;
+    public static final class OutAuthResponse{
+        public String path;
+        public UUID session_id;
+
+        public OutAuthResponse(String path, UUID session_id) {
+            this.path = path;
+            this.session_id = session_id;
+        }
+    }
+
+    public enum OAUTH2Provider{
+        VK,
+        Google,
+        Meta
     }
 }

@@ -1,16 +1,19 @@
 package ru.realityfamily.party_server.Models;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.lang.NonNull;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.UUID;
 
 @Entity
-@Table
+@Table(name = "party")
 public class Party {
     @NonNull
     @Id
@@ -32,12 +35,14 @@ public class Party {
     private Person creator;
 
     @Column
-    @Temporal(TemporalType.TIMESTAMP)
-    private Calendar startTime;
+    @DateTimeFormat(pattern = "dd.MM.yyyy HH:mm", iso = DateTimeFormat.ISO.DATE_TIME)
+    @JsonFormat(pattern = "dd.MM.yyyy HH:mm")
+    private LocalDateTime startTime;
 
     @Column
-    @Temporal(TemporalType.TIMESTAMP)
-    private Calendar stopTime;
+    @DateTimeFormat(pattern = "dd.MM.yyyy HH:mm", iso = DateTimeFormat.ISO.DATE_TIME)
+    @JsonFormat(pattern = "dd.MM.yyyy HH:mm")
+    private LocalDateTime stopTime;
 
     @Column
     private int maxPeopleCount;
@@ -104,19 +109,19 @@ public class Party {
         this.creator = creator;
     }
 
-    public Calendar getStartTime() {
+    public LocalDateTime getStartTime() {
         return startTime;
     }
 
-    public void setStartTime(Calendar startTime) {
+    public void setStartTime(LocalDateTime startTime) {
         this.startTime = startTime;
     }
 
-    public Calendar getStopTime() {
+    public LocalDateTime getStopTime() {
         return stopTime;
     }
 
-    public void setStopTime(Calendar stopTime) {
+    public void setStopTime(LocalDateTime stopTime) {
         this.stopTime = stopTime;
     }
 
@@ -154,6 +159,7 @@ public class Party {
 
     public enum Status {
         VERIFIED,
-        UNVERIFIED
+        UNVERIFIED,
+        CLOSED
     }
 }

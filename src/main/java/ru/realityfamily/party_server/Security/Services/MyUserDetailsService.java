@@ -10,14 +10,16 @@ import org.springframework.stereotype.Service;
 import ru.realityfamily.party_server.DB.DAO.PersonCredentialsDAO;
 import ru.realityfamily.party_server.Models.PersonCredentials;
 
-import java.util.Arrays;
 import java.util.Collections;
 
 @Service
 public class MyUserDetailsService implements UserDetailsService {
 
-    @Autowired
-    private PersonCredentialsDAO personCredentialsDAO;
+    private final PersonCredentialsDAO personCredentialsDAO;
+
+    public MyUserDetailsService(PersonCredentialsDAO personCredentialsDAO) {
+        this.personCredentialsDAO = personCredentialsDAO;
+    }
 
     @Override
     public UserDetails loadUserByUsername(String userName) throws UsernameNotFoundException {

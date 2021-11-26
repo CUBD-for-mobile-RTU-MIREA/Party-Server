@@ -1,10 +1,12 @@
 package ru.realityfamily.party_server.Models;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import javax.persistence.*;
 import java.util.UUID;
 
 @Entity
-@Table
+@Table(name = "person_credentials")
 public class PersonCredentials {
     @Id
     @GeneratedValue
@@ -22,6 +24,7 @@ public class PersonCredentials {
 
     @OneToOne
     @JoinColumn(name = "person_id")
+    @JsonManagedReference
     private Person person;
 
     public PersonCredentials() {
