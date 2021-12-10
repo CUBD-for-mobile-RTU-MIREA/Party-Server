@@ -12,5 +12,4 @@ public interface PersonDAO extends JpaRepository<Person, UUID> {
 
     @Query("select p from Person p where p.credentials.id = (select c.id from PersonCredentials c where c.login = :userName)")
     Person findByUserName(@Param("userName") String userName);
-
 }
